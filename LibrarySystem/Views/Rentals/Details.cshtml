@@ -10,26 +10,26 @@
     <h4>Rental</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
-            Date from
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StartDate)
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.StartDate)
         </dd>
-        <dt class = "col-sm-2">
-            Date to
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.EndDate)
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.EndDate)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Book)
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.Book.Author)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Customer)
+            @Html.DisplayFor(model => model.Customer)
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.Customer.FullName)

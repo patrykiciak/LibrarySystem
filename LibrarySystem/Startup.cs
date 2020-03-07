@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using LibrarySystem.Entities;
+using LibrarySystem.Interfaces;
+using LibrarySystem.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -26,9 +28,14 @@ namespace LibrarySystem
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
+            services.AddMvcCore().AddDataAnnotations();
 
             services.AddDbContext<LibrarySystemContext>(options =>
             options.UseSqlServer(Configuration.GetConnectionString("LibraryString")));
+
+            services.AddTransient<IRentalsRepository, RentalsRepository>();
+            services.AddTransient<IBooksRepository, BooksRepository>();
+            services.AddTransient<ICustomersRepository, CustomersRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

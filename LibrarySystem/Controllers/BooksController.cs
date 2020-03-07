@@ -6,28 +6,26 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using LibrarySystem.Entities;
+using LibrarySystem.Interfaces;
 
 namespace LibrarySystem.Controllers
 {
     public class BooksController : Controller
     {
-        private readonly LibrarySystemContext _context;
+        private readonly IBooksRepository _booksRepository;
 
-        public BooksController(LibrarySystemContext context)
+        public BooksController(IBooksRepository booksRepository)
         {
-            _context = context;
+            _booksRepository = booksRepository;
         }
 
         // GET: Books
         public async Task<IActionResult> Index()
         {
-            var books = await _context.Book.ToListAsync();
+            var books = await _booksRepository.GetAllAsyncIncludeRentals();
             foreach (var book in books)
             {
-                var isRented = _context.Rental.Where(
-                    rental => rental.BookId == book.Id
-                    && (rental.EndDate > DateTime.Now || rental.EndDate == null)
-                ).Any();
+                var isRented = _booksRepository.IsRented(book);
                 ViewData[book.Id.ToString()] = isRented;
             }
             return View(books);
@@ -41,8 +39,7 @@ namespace LibrarySystem.Controllers
                 return NotFound();
             }
 
-            var book = await _context.Book
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var book = await _booksRepository.GetBookAsync(id);
             if (book == null)
             {
                 return NotFound();
@@ -66,8 +63,7 @@ namespace LibrarySystem.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(book);
-                await _context.SaveChangesAsync();
+                await _booksRepository.Add(book);
                 return RedirectToAction(nameof(Index));
             }
             return View(book);
@@ -81,7 +77,7 @@ namespace LibrarySystem.Controllers
                 return NotFound();
             }
 
-            var book = await _context.Book.FindAsync(id);
+            var book = await _booksRepository.GetBookAsync(id);
             if (book == null)
             {
                 return NotFound();
@@ -105,12 +101,11 @@ namespace LibrarySystem.Controllers
             {
                 try
                 {
-                    _context.Update(book);
-                    await _context.SaveChangesAsync();
+                    await _booksRepository.Update(book);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!BookExists(book.Id))
+                    if (!_booksRepository.BookExists(book.Id))
                     {
                         return NotFound();
                     }
@@ -132,8 +127,8 @@ namespace LibrarySystem.Controllers
                 return NotFound();
             }
 
-            var book = await _context.Book
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var book = await _booksRepository.GetBookAsync(id);
+
             if (book == null)
             {
                 return NotFound();
@@ -147,15 +142,8 @@ namespace LibrarySystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var book = await _context.Book.FindAsync(id);
-            _context.Book.Remove(book);
-            await _context.SaveChangesAsync();
+            await _booksRepository.Remove(id);
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool BookExists(int id)
-        {
-            return _context.Book.Any(e => e.Id == id);
         }
     }
 }

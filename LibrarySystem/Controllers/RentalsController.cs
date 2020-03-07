@@ -5,23 +5,28 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using LibrarySystem.Entities;
+using LibrarySystem.Interfaces;
 
 namespace LibrarySystem.Controllers
 {
     public class RentalsController : Controller
     {
-        private readonly LibrarySystemContext _context;
+        private readonly IRentalsRepository _rentalsRepository;
+        private readonly IBooksRepository _booksRepository;
+        private readonly ICustomersRepository _customersRepository;
 
-        public RentalsController(LibrarySystemContext context)
+        public RentalsController(IRentalsRepository rentalsRepository, IBooksRepository booksRepository, ICustomersRepository customersRepository)
         {
-            _context = context;
+            _rentalsRepository = rentalsRepository;
+            _booksRepository = booksRepository;
+            _customersRepository = customersRepository;
         }
 
         // GET: Rentals
         public async Task<IActionResult> Index()
         {
-            var librarySystemContext = _context.Rental.Include(r => r.Book).Include(r => r.Customer);
-            return View(await librarySystemContext.ToListAsync());
+            var rentals = await _rentalsRepository.GetAllIncludeBookAndCustomer();
+            return View(rentals);
         }
 
         // GET: Rentals/Details/5
@@ -32,10 +37,7 @@ namespace LibrarySystem.Controllers
                 return NotFound();
             }
 
-            var rental = await _context.Rental
-                .Include(r => r.Book)
-                .Include(r => r.Customer)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var rental = await _rentalsRepository.GetRentalIncludeBookAndCustomer(id);
             if (rental == null)
             {
                 return NotFound();
@@ -45,33 +47,30 @@ namespace LibrarySystem.Controllers
         }
 
         // GET: Rentals/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            System.Linq.Expressions.Expression<Func<Book, bool>> isAvailable = book =>
-                    !_context.Rental.Where(rental => rental.BookId == book.Id
-                        && (rental.EndDate > DateTime.Now || rental.EndDate == null)
-                    ).Any();
+            var customers = await _customersRepository.GetAllAsync();
+            var books = await _booksRepository.GetAllAvailableAsync();
 
-            ViewData["BookId"] = new SelectList(_context.Book.Where(isAvailable), "Id", "Title");
-            ViewData["CustomerId"] = new SelectList(_context.Customer, "Id", "FullName");
+            ViewData["BookId"] = new SelectList(books, "Id", "Title");
+            ViewData["CustomerId"] = new SelectList(customers, "Id", "FullName");
             return View();
         }
 
-        // POST: Rentals/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,StartDate,EndDate,CustomerId,BookId")] Rental rental)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(rental);
-                await _context.SaveChangesAsync();
+                await _rentalsRepository.Add(rental);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["BookId"] = new SelectList(_context.Book, "Id", "Title", rental.BookId);
-            ViewData["CustomerId"] = new SelectList(_context.Customer, "Id", "FullName", rental.CustomerId);
+
+            var books = await _booksRepository.GetAllAvailableAsync();
+            var customers = await _customersRepository.GetAllAsync();
+            ViewData["BookId"] = new SelectList(books, "Id", "Title", rental.BookId);
+            ViewData["CustomerId"] = new SelectList(customers, "Id", "FullName", rental.CustomerId);
             return View(rental);
         }
 
@@ -83,13 +82,17 @@ namespace LibrarySystem.Controllers
                 return NotFound();
             }
 
-            var rental = await _context.Rental.FindAsync(id);
+            var rental = await _rentalsRepository.FindAsync(id);
             if (rental == null)
             {
                 return NotFound();
             }
-            ViewData["BookId"] = new SelectList(_context.Book, "Id", "Title", rental.BookId);
-            ViewData["CustomerId"] = new SelectList(_context.Customer, "Id", "FullName", rental.CustomerId);
+
+            var books = await _booksRepository.GetAllAvailableAsync();
+            var customers = await _customersRepository.GetAllAsync();
+
+            ViewData["BookId"] = new SelectList(books, "Id", "Title", rental.BookId);
+            ViewData["CustomerId"] = new SelectList(customers, "Id", "FullName", rental.CustomerId);
             return View(rental);
         }
 
@@ -109,12 +112,11 @@ namespace LibrarySystem.Controllers
             {
                 try
                 {
-                    _context.Update(rental);
-                    await _context.SaveChangesAsync();
+                    await _rentalsRepository.Update(rental);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!RentalExists(rental.Id))
+                    if (!_rentalsRepository.RentalExists(rental.Id))
                     {
                         return NotFound();
                     }
@@ -125,8 +127,13 @@ namespace LibrarySystem.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["BookId"] = new SelectList(_context.Book, "Id", "Title", rental.BookId);
-            ViewData["CustomerId"] = new SelectList(_context.Customer, "Id", "FullName", rental.CustomerId);
+
+            var books = await _booksRepository.GetAllAvailableAsync();
+            var customers = await _customersRepository.GetAllAsync();
+
+            ViewData["BookId"] = new SelectList(books, "Id", "Title", rental.BookId);
+            ViewData["CustomerId"] = new SelectList(customers, "Id", "FullName", rental.CustomerId);
+            
             return View(rental);
         }
 
@@ -138,10 +145,7 @@ namespace LibrarySystem.Controllers
                 return NotFound();
             }
 
-            var rental = await _context.Rental
-                .Include(r => r.Book)
-                .Include(r => r.Customer)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var rental = await _rentalsRepository.GetRentalIncludeBookAndCustomer(id);
             if (rental == null)
             {
                 return NotFound();
@@ -155,15 +159,8 @@ namespace LibrarySystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var rental = await _context.Rental.FindAsync(id);
-            _context.Rental.Remove(rental);
-            await _context.SaveChangesAsync();
+            await _rentalsRepository.Delete(id);
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool RentalExists(int id)
-        {
-            return _context.Rental.Any(e => e.Id == id);
         }
     }
 }

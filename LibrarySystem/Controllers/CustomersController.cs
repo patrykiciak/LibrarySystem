@@ -6,22 +6,24 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using LibrarySystem.Entities;
+using LibrarySystem.Interfaces;
 
 namespace LibrarySystem.Controllers
 {
     public class CustomersController : Controller
     {
-        private readonly LibrarySystemContext _context;
+        private readonly ICustomersRepository _customersRepository;
 
-        public CustomersController(LibrarySystemContext context)
+
+        public CustomersController(ICustomersRepository customersRepository)
         {
-            _context = context;
+            _customersRepository = customersRepository;
         }
 
         // GET: Customers
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Customer.ToListAsync());
+            return View(await _customersRepository.GetAllAsync());
         }
 
         // GET: Customers/Details/5
@@ -32,8 +34,7 @@ namespace LibrarySystem.Controllers
                 return NotFound();
             }
 
-            var customer = await _context.Customer
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var customer = await _customersRepository.GetCustomerAsync(id);
             if (customer == null)
             {
                 return NotFound();
@@ -48,18 +49,13 @@ namespace LibrarySystem.Controllers
             return View();
         }
 
-        // POST: Customers/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,FullName")] Customer customer)
         {
             if (ModelState.IsValid)
             {
-                customer.Id = Guid.NewGuid();
-                _context.Add(customer);
-                await _context.SaveChangesAsync();
+                await _customersRepository.Add(customer);
                 return RedirectToAction(nameof(Index));
             }
             return View(customer);
@@ -73,7 +69,7 @@ namespace LibrarySystem.Controllers
                 return NotFound();
             }
 
-            var customer = await _context.Customer.FindAsync(id);
+            var customer = await _customersRepository.GetCustomerAsync(id);
             if (customer == null)
             {
                 return NotFound();
@@ -97,12 +93,11 @@ namespace LibrarySystem.Controllers
             {
                 try
                 {
-                    _context.Update(customer);
-                    await _context.SaveChangesAsync();
+                    await _customersRepository.Update(customer);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!CustomerExists(customer.Id))
+                    if (!_customersRepository.CustomerExists(customer.Id))
                     {
                         return NotFound();
                     }
@@ -124,8 +119,7 @@ namespace LibrarySystem.Controllers
                 return NotFound();
             }
 
-            var customer = await _context.Customer
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var customer = await _customersRepository.GetCustomerAsync(id);
             if (customer == null)
             {
                 return NotFound();
@@ -139,15 +133,8 @@ namespace LibrarySystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
-            var customer = await _context.Customer.FindAsync(id);
-            _context.Customer.Remove(customer);
-            await _context.SaveChangesAsync();
+            await _customersRepository.Remove(id);
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool CustomerExists(Guid id)
-        {
-            return _context.Customer.Any(e => e.Id == id);
         }
     }
 }
