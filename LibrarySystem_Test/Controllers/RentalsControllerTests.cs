@@ -98,7 +98,7 @@ namespace LibrarySystem_Test.Controllers
         private Mock<IBooksService> MockBooksService()
         {
             var mock = new Mock<IBooksService>();
-            mock.Setup(repository => repository.GetAllAsync())
+            mock.Setup(service => service.GetAllAsync())
                 .Returns(Task.FromResult(new List<Book>()));
             return mock;
         }
@@ -106,7 +106,7 @@ namespace LibrarySystem_Test.Controllers
         private Mock<ICustomersService> MockCustomersService()
         {
             var mock = new Mock<ICustomersService>();
-            mock.Setup(repository => repository.GetAllAsync())
+            mock.Setup(service => service.GetAllAsync())
                 .Returns(Task.FromResult(new List<Customer>()));
             return mock;
         }
