@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace LibrarySystem.Interfaces
 {
-    public interface ICustomersRepository
+    public interface ICustomersService
     {
         Task Add(Customer customer);
         bool CustomerExists(Guid id);

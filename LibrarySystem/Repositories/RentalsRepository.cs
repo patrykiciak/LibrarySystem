@@ -22,11 +22,8 @@ namespace LibrarySystem.Repositories
             return await _context.Rental.Include(r => r.Book).Include(r => r.Customer).ToListAsync();
         }
 
-        public async Task<Rental> GetRentalIncludeBookAndCustomer(int? id)
+        public async Task<Rental> GetRentalIncludeBookAndCustomer(int id)
         {
-            if (id == null)
-                return null;
-
             return await _context.Rental
                 .Include(r => r.Book)
                 .Include(r => r.Customer)

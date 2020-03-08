@@ -41,11 +41,8 @@ namespace LibrarySystem.Repositories
                 ).Any();
         }
 
-        public async Task<Book> GetBookAsync(int? id)
+        public async Task<Book> GetBookAsync(int id)
         {
-            if (id == null)
-                return null;
-
             return await _context.Book
                 .FirstOrDefaultAsync(m => m.Id == id);
         }
@@ -72,6 +69,11 @@ namespace LibrarySystem.Repositories
         public bool BookExists(int id)
         {
             return _context.Book.Any(e => e.Id == id);
+        }
+
+        public async Task<List<Book>> GetAllAsync()
+        {
+            return await _context.Book.ToListAsync();
         }
     }
 }

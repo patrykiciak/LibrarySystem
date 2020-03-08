@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using LibrarySystem.Entities;
 using LibrarySystem.Interfaces;
 using LibrarySystem.Repositories;
+using LibrarySystem.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -36,6 +37,10 @@ namespace LibrarySystem
             services.AddTransient<IRentalsRepository, RentalsRepository>();
             services.AddTransient<IBooksRepository, BooksRepository>();
             services.AddTransient<ICustomersRepository, CustomersRepository>();
+
+            services.AddTransient<IRentalsService, RentalsService>();
+            services.AddTransient<ICustomersService, CustomersService>();
+            services.AddTransient<IBooksService, BooksService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

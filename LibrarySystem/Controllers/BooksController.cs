@@ -12,22 +12,17 @@ namespace LibrarySystem.Controllers
 {
     public class BooksController : Controller
     {
-        private readonly IBooksRepository _booksRepository;
+        private readonly IBooksService _booksService;
 
-        public BooksController(IBooksRepository booksRepository)
+        public BooksController(IBooksService booksService)
         {
-            _booksRepository = booksRepository;
+            _booksService = booksService;
         }
 
         // GET: Books
         public async Task<IActionResult> Index()
         {
-            var books = await _booksRepository.GetAllAsyncIncludeRentals();
-            foreach (var book in books)
-            {
-                var isRented = _booksRepository.IsRented(book);
-                ViewData[book.Id.ToString()] = isRented;
-            }
+            var books = await _booksService.GetAllWithAvailability();
             return View(books);
         }
 
@@ -39,7 +34,7 @@ namespace LibrarySystem.Controllers
                 return NotFound();
             }
 
-            var book = await _booksRepository.GetBookAsync(id);
+            var book = await _booksService.GetBookAsync(id);
             if (book == null)
             {
                 return NotFound();
@@ -63,7 +58,7 @@ namespace LibrarySystem.Controllers
         {
             if (ModelState.IsValid)
             {
-                await _booksRepository.Add(book);
+                await _booksService.Add(book);
                 return RedirectToAction(nameof(Index));
             }
             return View(book);
@@ -77,7 +72,7 @@ namespace LibrarySystem.Controllers
                 return NotFound();
             }
 
-            var book = await _booksRepository.GetBookAsync(id);
+            var book = await _booksService.GetBookAsync(id);
             if (book == null)
             {
                 return NotFound();
@@ -101,11 +96,11 @@ namespace LibrarySystem.Controllers
             {
                 try
                 {
-                    await _booksRepository.Update(book);
+                    await _booksService.Update(book);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!_booksRepository.BookExists(book.Id))
+                    if (!_booksService.BookExists(book.Id))
                     {
                         return NotFound();
                     }
@@ -127,7 +122,7 @@ namespace LibrarySystem.Controllers
                 return NotFound();
             }
 
-            var book = await _booksRepository.GetBookAsync(id);
+            var book = await _booksService.GetBookAsync(id);
 
             if (book == null)
             {
@@ -142,7 +137,7 @@ namespace LibrarySystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await _booksRepository.Remove(id);
+            await _booksService.Remove(id);
             return RedirectToAction(nameof(Index));
         }
     }

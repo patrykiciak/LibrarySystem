@@ -18,6 +18,9 @@ namespace LibrarySystem.Entities.Validators
 
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
+            if (value == null)
+                return ValidationResult.Success;
+
             DateTime earlierDate = (DateTime)value;
 
             DateTime laterDate = (DateTime)validationContext.ObjectType.GetProperty(DateToCompare).GetValue(validationContext.ObjectInstance, null);

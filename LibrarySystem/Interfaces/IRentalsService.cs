@@ -4,11 +4,11 @@ using System.Threading.Tasks;
 
 namespace LibrarySystem.Interfaces
 {
-    public interface IRentalsRepository
+    public interface IRentalsService
     {
         Task Add(Rental rental);
         Task Delete(int id);
-        Task<Rental> FindAsync(int? id);
+        Task<Rental> FindAsync(int id);
         Task<List<Rental>> GetAllIncludeBookAndCustomer();
         Task<Rental> GetRentalIncludeBookAndCustomer(int id);
         bool RentalExists(int id);

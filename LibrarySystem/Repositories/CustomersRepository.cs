@@ -22,11 +22,8 @@ namespace LibrarySystem.Repositories
             return await _context.Customer.ToListAsync();
         }
 
-        public async Task<Customer> GetCustomerAsync(Guid? id)
+        public async Task<Customer> GetCustomerAsync(Guid id)
         {
-            if (id == null)
-                return null;
-
             return await _context.Customer
                 .FirstOrDefaultAsync(m => m.Id == id);
         }

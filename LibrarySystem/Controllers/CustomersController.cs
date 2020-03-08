@@ -12,18 +12,18 @@ namespace LibrarySystem.Controllers
 {
     public class CustomersController : Controller
     {
-        private readonly ICustomersRepository _customersRepository;
+        private readonly ICustomersService _customersService;
 
 
-        public CustomersController(ICustomersRepository customersRepository)
+        public CustomersController(ICustomersService customersService)
         {
-            _customersRepository = customersRepository;
+            _customersService = customersService;
         }
 
         // GET: Customers
         public async Task<IActionResult> Index()
         {
-            return View(await _customersRepository.GetAllAsync());
+            return View(await _customersService.GetAllAsync());
         }
 
         // GET: Customers/Details/5
@@ -34,7 +34,7 @@ namespace LibrarySystem.Controllers
                 return NotFound();
             }
 
-            var customer = await _customersRepository.GetCustomerAsync(id);
+            var customer = await _customersService.GetCustomerAsync((Guid)id);
             if (customer == null)
             {
                 return NotFound();
@@ -55,7 +55,7 @@ namespace LibrarySystem.Controllers
         {
             if (ModelState.IsValid)
             {
-                await _customersRepository.Add(customer);
+                await _customersService.Add(customer);
                 return RedirectToAction(nameof(Index));
             }
             return View(customer);
@@ -69,7 +69,7 @@ namespace LibrarySystem.Controllers
                 return NotFound();
             }
 
-            var customer = await _customersRepository.GetCustomerAsync(id);
+            var customer = await _customersService.GetCustomerAsync((Guid)id);
             if (customer == null)
             {
                 return NotFound();
@@ -93,11 +93,11 @@ namespace LibrarySystem.Controllers
             {
                 try
                 {
-                    await _customersRepository.Update(customer);
+                    await _customersService.Update(customer);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!_customersRepository.CustomerExists(customer.Id))
+                    if (!_customersService.CustomerExists(customer.Id))
                     {
                         return NotFound();
                     }
@@ -119,7 +119,7 @@ namespace LibrarySystem.Controllers
                 return NotFound();
             }
 
-            var customer = await _customersRepository.GetCustomerAsync(id);
+            var customer = await _customersService.GetCustomerAsync((Guid)id);
             if (customer == null)
             {
                 return NotFound();
@@ -133,7 +133,7 @@ namespace LibrarySystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
-            await _customersRepository.Remove(id);
+            await _customersService.Remove(id);
             return RedirectToAction(nameof(Index));
         }
     }
