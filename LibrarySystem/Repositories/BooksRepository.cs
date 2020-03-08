@@ -26,7 +26,7 @@ namespace LibrarySystem.Repositories
         {
             System.Linq.Expressions.Expression<Func<Book, bool>> isAvailable = book =>
                     !book.Rental.Where(rental => rental.BookId == book.Id
-                        && (rental.EndDate > DateTime.Now || rental.EndDate == null)
+                        && rental.StartDate < DateTime.Now && (rental.EndDate == null || rental.EndDate > DateTime.Now)
                     ).Any();
 
             return await _context.Book.Include(book => book.Rental).Where(isAvailable).ToListAsync();
@@ -37,7 +37,7 @@ namespace LibrarySystem.Repositories
         {
             return book.Rental.Where(
                     rental => rental.BookId == book.Id
-                    && (rental.EndDate > DateTime.Now || rental.EndDate == null)
+                    && rental.StartDate < DateTime.Now && (rental.EndDate > DateTime.Now || rental.EndDate == null)
                 ).Any();
         }
 

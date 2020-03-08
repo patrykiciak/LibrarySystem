@@ -50,7 +50,7 @@ namespace LibrarySystem.Controllers
         public async Task<IActionResult> Create()
         {
             var customers = await _customersService.GetAllAsync();
-            var books = await _booksService.GetAllAsync();
+            var books = await _booksService.GetAllAvailableAsync();
 
             ViewData["BookId"] = new SelectList(books, "Id", "Title");
             ViewData["CustomerId"] = new SelectList(customers, "Id", "FullName");
@@ -67,7 +67,7 @@ namespace LibrarySystem.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var books = await _booksService.GetAllAsync();
+            var books = await _booksService.GetAllAvailableAsync();
             var customers = await _customersService.GetAllAsync();
             ViewData["BookId"] = new SelectList(books, "Id", "Title", rental.BookId);
             ViewData["CustomerId"] = new SelectList(customers, "Id", "FullName", rental.CustomerId);

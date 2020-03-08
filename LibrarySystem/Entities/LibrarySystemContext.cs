@@ -6,13 +6,11 @@ namespace LibrarySystem.Entities
 {
     public partial class LibrarySystemContext : DbContext
     {
-        public LibrarySystemContext()
-        {
-        }
 
         public LibrarySystemContext(DbContextOptions<LibrarySystemContext> options)
             : base(options)
         {
+            
         }
 
         public virtual DbSet<Book> Book { get; set; }
@@ -21,10 +19,7 @@ namespace LibrarySystem.Entities
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            if (!optionsBuilder.IsConfigured)
-            {
-                optionsBuilder.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=LibrarySystem;Trusted_Connection=True;");
-            }
+            
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -77,6 +72,24 @@ namespace LibrarySystem.Entities
             });
 
             OnModelCreatingPartial(modelBuilder);
+
+            modelBuilder.Entity<Book>().HasData(
+                new Book { Id = 1, Author = "John Travolta", Isbn = "12312123132", Title = "Sun is shining" },
+                new Book { Id = 2, Author = "Angelina Jolie", Isbn = "342545667765", Title = "Master that game" },
+                new Book { Id = 3, Author = "Larry Clint", Isbn = "756324vddsffd", Title = "Stop sending SMS" },
+                new Book { Id = 4, Author = "Haskel Peanut", Isbn = "12312123132", Title = "I like peanutbutter" }
+                );
+
+            modelBuilder.Entity<Customer>().HasData(
+                new Customer { Id = Guid.Parse("123e4567-e89b-12d3-a456-426655440000"), FullName = "Andrzej Duda" },
+                new Customer { Id = Guid.Parse("123e5432-e89b-12d3-a456-426655440000"), FullName = "Barack Obama" },
+                new Customer { Id = Guid.Parse("213e4567-e89b-12d3-a456-426655440000"), FullName = "Tristan Burba" }
+                );
+
+            modelBuilder.Entity<Rental>().HasData(
+                new Rental { Id = 1, CustomerId = Guid.Parse("123e4567-e89b-12d3-a456-426655440000"), BookId = 2, StartDate = new DateTime(2012, 12, 12)},
+                new Rental { Id = 2, CustomerId = Guid.Parse("213e4567-e89b-12d3-a456-426655440000"), BookId = 4, StartDate = new DateTime(2018, 1, 1), EndDate = new DateTime(2019, 1, 1)}
+                );
         }
 
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
