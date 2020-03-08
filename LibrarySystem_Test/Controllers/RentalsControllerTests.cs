@@ -92,12 +92,15 @@ namespace LibrarySystem_Test.Controllers
         {
             var mock = new Mock<IRentalsService>();
             mock.Setup(service => service.Update(It.IsAny<Rental>())).Returns(Task.CompletedTask);
+            mock.Setup(service => service.Add(It.IsAny<Rental>())).Returns(Task.CompletedTask);
             return mock;
         }
 
         private Mock<IBooksService> MockBooksService()
         {
             var mock = new Mock<IBooksService>();
+            mock.Setup(service => service.GetAllAvailableAsync())
+                .Returns(Task.FromResult(new List<Book>()));
             mock.Setup(service => service.GetAllAsync())
                 .Returns(Task.FromResult(new List<Book>()));
             return mock;

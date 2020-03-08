@@ -6,6 +6,7 @@ namespace LibrarySystem.Entities
 {
     public partial class LibrarySystemContext : DbContext
     {
+        public LibrarySystemContext() {}
 
         public LibrarySystemContext(DbContextOptions<LibrarySystemContext> options)
             : base(options)
